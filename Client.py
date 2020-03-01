@@ -8,6 +8,18 @@ from RtpPacket import RtpPacket
 CACHE_FILE_NAME = "cache-"
 CACHE_FILE_EXT = ".jpg"
 
+# Some request type constants
+HEADER_REQUEST_TYPE_SETUP = "SETUP"
+HEADER_REQUEST_TYPE_PAUSE = "PAUSE"
+HEADER_REQUEST_TYPE_PLAY = "PLAY"
+HEADER_REQUEST_TYPE_TEARDOWN = "TEARDOWN"
+
+# Some request header key constants
+HEADER_FIELD_SESSION = "Session"
+HEADER_FIELD_CSEQ = "CSeq"
+HEADER_FIELD_PROTOCOL = "RTSP/1.0"
+HEADER_FIELD_RTP_OVER_UDP_PORT = "Transport: RTP/UDP; client_port="
+
 class Client:
 	INIT = 0
 	READY = 1
@@ -142,60 +154,50 @@ class Client:
 	
 	def sendRtspRequest(self, requestCode):
 		"""Send RTSP request to the server."""	
-		#-------------
-		# TO COMPLETE
-		#-------------
-		
+
 		# Setup request
 		if requestCode == self.SETUP and self.state == self.INIT:
 			threading.Thread(target=self.recvRtspReply).start()
 			# Update RTSP sequence number.
-			# ...
-			
+                        self.rtspSeq += 1
 			# Write the RTSP request to be sent.
-			# request = ...
-			
+                        request = newRequest(self, HEADER_REQUEST_TYPE_SETUP)
 			# Keep track of the sent request.
-			# self.requestSent = ...
-		
+			self.requestSent = self.SETUP
+
 		# Play request
 		elif requestCode == self.PLAY and self.state == self.READY:
 			# Update RTSP sequence number.
-			# ...
-			
+                        self.rtspSeq += 1
 			# Write the RTSP request to be sent.
-			# request = ...
-			
+                        request = newRequest(self, HEADER_REQUEST_TYPE_PLAY)
 			# Keep track of the sent request.
-			# self.requestSent = ...
-		
+			self.requestSent = self.PLAY
+
 		# Pause request
 		elif requestCode == self.PAUSE and self.state == self.PLAYING:
 			# Update RTSP sequence number.
-			# ...
-			
+                        self.rtspSeq += 1
 			# Write the RTSP request to be sent.
-			# request = ...
-			
+                        request = newRequest(self, HEADER_REQUEST_TYPE_PAUSE)
 			# Keep track of the sent request.
-			# self.requestSent = ...
+			self.requestSent = self.PAUSE
 			
 		# Teardown request
 		elif requestCode == self.TEARDOWN and not self.state == self.INIT:
 			# Update RTSP sequence number.
-			# ...
-			
+                        self.rtspSeq += 1
 			# Write the RTSP request to be sent.
-			# request = ...
-			
+                        request = newRequest(self, HEADER_REQUEST_TYPE_TEARDOWN)
 			# Keep track of the sent request.
-			# self.requestSent = ...
+			self.requestSent = self.TEARDOWN
 		else:
 			return
 		
 		# Send the RTSP request using rtspSocket.
-		# ...
-		
+		self.rtspSocket.send(request.encode())
+
+		# Print the data sent to the console
 		print('\nData sent:\n' + request)
 	
 	def recvRtspReply(self):
@@ -211,6 +213,17 @@ class Client:
 				self.rtspSocket.shutdown(socket.SHUT_RDWR)
 				self.rtspSocket.close()
 				break
+
+    def newRequest(self, request_type):
+        request = "{} {} {}\n".format(request_type, self.fileName, HEADER_FIELD_PROTOCOL)
+        request += "{}: {}\n".format(HEADER_FIELD_CSEQ, self.rtspSeq)
+
+        if request_type == HEADER_REQUEST_TYPE_SETUP:
+            request += "{}{}".format(HEADER_FIELD_RTP_OVER_UDP_PORT, self.rtpPort)
+	else:
+            request += "{}: {}".format(HEADER_FIELD_SESSION, self.sessionId)
+
+        return request
 	
 	def parseRtspReply(self, data):
 		"""Parse the RTSP reply from the server."""
