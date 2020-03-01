@@ -20,7 +20,7 @@ class RtpPacket:
 		header[1] = marker << 7 | pt
 
 		header[2] = seqnum >> 8
-		header[3] = seqnum
+		header[3] = seqnum & 0xFF # make sure it fits in a byte
 
 		header[4] = (timestamp >> 24) & 0xFF
 		header[5] = (timestamp >> 16) & 0xFF
