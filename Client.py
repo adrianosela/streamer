@@ -157,7 +157,7 @@ class Client:
         request = "{} {} {}\n".format(request_type, self.fileName, HEADER_FIELD_PROTOCOL)
         request += "{}: {}\n".format(HEADER_FIELD_CSEQ, self.rtspSeq)
         if request_type == HEADER_REQUEST_TYPE_SETUP:
-            request += "{}{}".format(HEADER_FIELD_RTP_OVER_UDP_PORT, self.rtpPort)
+            request += "{} {}".format(HEADER_FIELD_RTP_OVER_UDP_PORT, self.rtpPort)
         else:
             request += "{}: {}".format(HEADER_FIELD_SESSION, self.sessionId)
         return request
