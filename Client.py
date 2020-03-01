@@ -228,27 +228,24 @@ class Client:
 			if self.sessionId == session:
 				if int(lines[0].split(' ')[1]) == 200: 
 					if self.requestSent == self.SETUP:
-						#-------------
-						# TO COMPLETE
-						#-------------
-						# Update RTSP state.
-						# self.state = ...
-						
+                                                # Update RTSP state.
+                                                self.state = self.READY
+
 						# Open RTP port.
-						self.openRtpPort() 
+						self.openRtpPort()
 					elif self.requestSent == self.PLAY:
-						# self.state = ...
+						self.state = self.PLAYING
 					elif self.requestSent == self.PAUSE:
-						# self.state = ...
-						
+						self.state = self.READY
+
 						# The play thread exits. A new thread is created on resume.
 						self.playEvent.set()
 					elif self.requestSent == self.TEARDOWN:
-						# self.state = ...
-						
+						self.state = self.INIT
+
 						# Flag the teardownAcked to close the socket.
-						self.teardownAcked = 1 
-	
+						self.teardownAcked = 1
+
 	def openRtpPort(self):
 		"""Open RTP socket binded to a specified port."""
 		# Create a new datagram socket to receive RTP packets from the server
